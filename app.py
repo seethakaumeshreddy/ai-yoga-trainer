@@ -1,8 +1,7 @@
 import streamlit as st
-import cv2 as cv2
-import mediapipe as mp
 import numpy as np
 import time
+USE_CAMERA = False  # Cloud-safe mode
 
 st.set_page_config(page_title="AI Yoga Trainer", layout="wide")
 
@@ -94,4 +93,5 @@ if st.session_state.run:
     cap.release()
 else:
     st.info("Click **Start Camera** to begin")
+
 
