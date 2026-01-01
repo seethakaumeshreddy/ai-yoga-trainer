@@ -1,0 +1,20 @@
+{
+  "Tree Pose": {
+    "english": "Tree Pose",
+    "category": "Balance",
+    "difficulty": "Beginner",
+    "benefits": "Improves balance and focus"
+  },
+  "Warrior Pose": {
+    "english": "Warrior Pose",
+    "category": "Standing",
+    "difficulty": "Intermediate",
+    "benefits": "Strengthens legs and arms"
+  },
+  "Cobra Pose": {
+    "english": "Cobra Pose",
+    "category": "Backbend",
+    "difficulty": "Beginner",
+    "benefits": "Improves spine flexibility"
+  }
+}
