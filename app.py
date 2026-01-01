@@ -1,3 +1,4 @@
+import requests
 import streamlit as st
 import json
 
@@ -24,13 +25,25 @@ pose_data = POSES[selected_pose]
 # ---------------- POSE IMAGE ----------------
 st.markdown("### 🖼️ Reference Pose Image")
 
-image_url = f"https://source.unsplash.com/featured/?yoga,{selected_pose.replace(' ', '')}"
+st.markdown("### 🖼️ Reference Pose Image")
 
-st.image(
-    image_url,
-    caption=f"{selected_pose} (reference image)",
-    use_column_width=True
-)
+try:
+    image_url = f"https://source.unsplash.com/featured/?yoga,{selected_pose.replace(' ', '')}"
+
+    response = requests.get(image_url, timeout=10)
+
+    if response.status_code == 200:
+        st.image(
+            response.content,
+            caption=f"{selected_pose} (reference image)",
+            use_column_width=True
+        )
+    else:
+        st.warning("Unable to load image for this pose.")
+
+except Exception as e:
+    st.error("Image loading failed.")
+
 
 # ---------------- POSE DETAILS ----------------
 st.markdown("### ℹ️ Pose Information")
@@ -45,3 +58,4 @@ st.warning(
     "Camera-based posture correction is available in the local version of this project "
     "using OpenCV and MediaPipe."
 )
+
