@@ -1,5 +1,5 @@
 import streamlit as st
-import cv2
+import cv2 as cv2
 import mediapipe as mp
 import numpy as np
 import time
@@ -94,3 +94,4 @@ if st.session_state.run:
     cap.release()
 else:
     st.info("Click **Start Camera** to begin")
+
