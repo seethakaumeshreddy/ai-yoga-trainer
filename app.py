@@ -11,6 +11,68 @@ st.info(
     "This cloud version demonstrates pose selection and dynamic reference visualization."
 )
 
+# ---------------- FUNCTION (MUST BE FIRST) ----------------
+def get_pose_image(pose_name):
+    url = "https://en.wikipedia.org/w/api.php"
+    headers = {
+        "User-Agent": "AI-Yoga-Trainer/1.0 (educational project)"
+    }
+
+    try:
+        # Search Wikipedia
+        search_params = {
+            "action": "query",
+            "format": "json",
+            "list": "search",
+            "srsearch": pose_name + " yoga",
+            "srlimit": 1
+        }
+
+        search_response = requests.get(
+            url, params=search_params, headers=headers, timeout=10
+        )
+
+        if not search_response.headers.get("Content-Type", "").startswith("application/json"):
+            return None
+
+        search_data = search_response.json()
+        results = search_data.get("query", {}).get("search", [])
+
+        if not results:
+            return None
+
+        page_title = results[0]["title"]
+
+        # Get image from page
+        image_params = {
+            "action": "query",
+            "format": "json",
+            "prop": "pageimages",
+            "titles": page_title,
+            "piprop": "thumbnail",
+            "pithumbsize": 700
+        }
+
+        image_response = requests.get(
+            url, params=image_params, headers=headers, timeout=10
+        )
+
+        if not image_response.headers.get("Content-Type", "").startswith("application/json"):
+            return None
+
+        image_data = image_response.json()
+        pages = image_data.get("query", {}).get("pages", {})
+
+        for page in pages.values():
+            if "thumbnail" in page:
+                return page["thumbnail"]["source"]
+
+    except Exception:
+        return None
+
+    return None
+
+
 # ---------------- LOAD POSES ----------------
 with open("poses.json", "r", encoding="utf-8") as f:
     POSES = json.load(f)
@@ -19,11 +81,11 @@ pose_list = list(POSES.keys())
 
 # ---------------- SELECT POSE ----------------
 selected_pose = st.selectbox("Select Yoga Pose", pose_list)
-
 pose_data = POSES[selected_pose]
 
-# ---------------- DYNAMIC IMAGE FROM WIKIPEDIA ----------------
+# ---------------- IMAGE DISPLAY ----------------
 st.markdown("### 🖼️ Reference Pose Image")
+
 image_url = get_pose_image(selected_pose)
 
 if image_url:
@@ -34,17 +96,6 @@ if image_url:
     )
 else:
     st.warning("No reference image found for this pose.")
-image_url = get_pose_image(selected_pose)
-
-if image_url:
-    st.image(
-        image_url,
-        caption=f"{selected_pose} (Wikipedia reference image)",
-        use_column_width=True
-    )
-else:
-    st.warning("No reference image found for this pose.")
-
 
 # ---------------- POSE DETAILS ----------------
 st.markdown("### ℹ️ Pose Information")
@@ -59,5 +110,3 @@ st.warning(
     "Camera-based posture correction using OpenCV & MediaPipe "
     "is available in the local version of this project."
 )
-
-
