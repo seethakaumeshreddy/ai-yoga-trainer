@@ -24,47 +24,16 @@ pose_data = POSES[selected_pose]
 
 # ---------------- DYNAMIC IMAGE FROM WIKIPEDIA ----------------
 st.markdown("### 🖼️ Reference Pose Image")
+image_url = get_pose_image(selected_pose)
 
-def get_pose_image(pose_name):
-    search_url = "https://en.wikipedia.org/w/api.php"
-
-    # STEP 1: SEARCH PAGE
-    search_params = {
-        "action": "query",
-        "format": "json",
-        "list": "search",
-        "srsearch": pose_name + " yoga",
-        "srlimit": 1
-    }
-
-    search_res = requests.get(search_url, params=search_params, timeout=10).json()
-    search_results = search_res.get("query", {}).get("search", [])
-
-    if not search_results:
-        return None
-
-    page_title = search_results[0]["title"]
-
-    # STEP 2: FETCH IMAGE FROM PAGE
-    image_params = {
-        "action": "query",
-        "format": "json",
-        "prop": "pageimages",
-        "titles": page_title,
-        "piprop": "thumbnail",
-        "pithumbsize": 700
-    }
-
-    image_res = requests.get(search_url, params=image_params, timeout=10).json()
-    pages = image_res.get("query", {}).get("pages", {})
-
-    for page in pages.values():
-        if "thumbnail" in page:
-            return page["thumbnail"]["source"]
-
-    return None
-
-
+if image_url:
+    st.image(
+        image_url,
+        caption=f"{selected_pose} (Wikipedia reference image)",
+        use_column_width=True
+    )
+else:
+    st.warning("No reference image found for this pose.")
 image_url = get_pose_image(selected_pose)
 
 if image_url:
@@ -90,4 +59,5 @@ st.warning(
     "Camera-based posture correction using OpenCV & MediaPipe "
     "is available in the local version of this project."
 )
+
 
