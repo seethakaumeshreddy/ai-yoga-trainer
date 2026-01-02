@@ -1,6 +1,6 @@
-import requests
 import streamlit as st
 import json
+import requests
 
 # ---------------- PAGE SETUP ----------------
 st.set_page_config(page_title="AI Yoga Trainer", layout="wide")
@@ -8,7 +8,7 @@ st.title("🧘 AI Yoga Trainer")
 
 st.info(
     "ℹ️ Note: Live posture correction (camera) works in local mode only. "
-    "This cloud version demonstrates pose selection and reference visualization."
+    "This cloud version demonstrates pose selection and dynamic reference visualization."
 )
 
 # ---------------- LOAD POSES ----------------
@@ -22,28 +22,44 @@ selected_pose = st.selectbox("Select Yoga Pose", pose_list)
 
 pose_data = POSES[selected_pose]
 
-# ---------------- POSE IMAGE ----------------
+# ---------------- DYNAMIC IMAGE FROM WIKIPEDIA ----------------
 st.markdown("### 🖼️ Reference Pose Image")
 
-st.markdown("### 🖼️ Reference Pose Image")
+def get_wikipedia_image(pose_name):
+    url = "https://en.wikipedia.org/w/api.php"
+    params = {
+        "action": "query",
+        "format": "json",
+        "prop": "pageimages",
+        "piprop": "thumbnail",
+        "pithumbsize": 600,
+        "titles": pose_name + " yoga pose"
+    }
 
-try:
-    image_url = f"https://source.unsplash.com/featured/?yoga,{selected_pose.replace(' ', '')}"
+    try:
+        response = requests.get(url, params=params, timeout=10)
+        data = response.json()
 
-    response = requests.get(image_url, timeout=10)
+        pages = data.get("query", {}).get("pages", {})
+        for page in pages.values():
+            if "thumbnail" in page:
+                return page["thumbnail"]["source"]
+    except:
+        return None
 
-    if response.status_code == 200:
-        st.image(
-            response.content,
-            caption=f"{selected_pose} (reference image)",
-            use_column_width=True
-        )
-    else:
-        st.warning("Unable to load image for this pose.")
+    return None
 
-except Exception as e:
-    st.error("Image loading failed.")
 
+image_url = get_wikipedia_image(selected_pose)
+
+if image_url:
+    st.image(
+        image_url,
+        caption=f"{selected_pose} (Wikipedia reference image)",
+        use_column_width=True
+    )
+else:
+    st.warning("No reference image found for this pose.")
 
 # ---------------- POSE DETAILS ----------------
 st.markdown("### ℹ️ Pose Information")
@@ -52,10 +68,9 @@ st.write("**Category:**", pose_data.get("category", "—"))
 st.write("**Difficulty:**", pose_data.get("difficulty", "—"))
 st.write("**Benefits:**", pose_data.get("benefits", "—"))
 
-# ---------------- CAMERA MESSAGE ----------------
+# ---------------- CAMERA NOTE ----------------
 st.markdown("### 📷 Live Posture Correction")
 st.warning(
-    "Camera-based posture correction is available in the local version of this project "
-    "using OpenCV and MediaPipe."
+    "Camera-based posture correction using OpenCV & MediaPipe "
+    "is available in the local version of this project."
 )
-
