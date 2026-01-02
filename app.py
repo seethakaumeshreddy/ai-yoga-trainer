@@ -25,32 +25,47 @@ pose_data = POSES[selected_pose]
 # ---------------- DYNAMIC IMAGE FROM WIKIPEDIA ----------------
 st.markdown("### 🖼️ Reference Pose Image")
 
-def get_wikipedia_image(pose_name):
-    url = "https://en.wikipedia.org/w/api.php"
-    params = {
+def get_pose_image(pose_name):
+    search_url = "https://en.wikipedia.org/w/api.php"
+
+    # STEP 1: SEARCH PAGE
+    search_params = {
+        "action": "query",
+        "format": "json",
+        "list": "search",
+        "srsearch": pose_name + " yoga",
+        "srlimit": 1
+    }
+
+    search_res = requests.get(search_url, params=search_params, timeout=10).json()
+    search_results = search_res.get("query", {}).get("search", [])
+
+    if not search_results:
+        return None
+
+    page_title = search_results[0]["title"]
+
+    # STEP 2: FETCH IMAGE FROM PAGE
+    image_params = {
         "action": "query",
         "format": "json",
         "prop": "pageimages",
+        "titles": page_title,
         "piprop": "thumbnail",
-        "pithumbsize": 600,
-        "titles": pose_name + " yoga pose"
+        "pithumbsize": 700
     }
 
-    try:
-        response = requests.get(url, params=params, timeout=10)
-        data = response.json()
+    image_res = requests.get(search_url, params=image_params, timeout=10).json()
+    pages = image_res.get("query", {}).get("pages", {})
 
-        pages = data.get("query", {}).get("pages", {})
-        for page in pages.values():
-            if "thumbnail" in page:
-                return page["thumbnail"]["source"]
-    except:
-        return None
+    for page in pages.values():
+        if "thumbnail" in page:
+            return page["thumbnail"]["source"]
 
     return None
 
 
-image_url = get_wikipedia_image(selected_pose)
+image_url = get_pose_image(selected_pose)
 
 if image_url:
     st.image(
@@ -60,6 +75,7 @@ if image_url:
     )
 else:
     st.warning("No reference image found for this pose.")
+
 
 # ---------------- POSE DETAILS ----------------
 st.markdown("### ℹ️ Pose Information")
@@ -74,3 +90,4 @@ st.warning(
     "Camera-based posture correction using OpenCV & MediaPipe "
     "is available in the local version of this project."
 )
+
